@@ -53,20 +53,50 @@ fn init_config() {
 fn main() {
     init_config();
 
+    let mut glfw = glfw::init(glfw::FAIL_ON_ERRORS).unwrap();
+    glfw.window_hint(glfw::WindowHint::ContextVersion(1, 1));
+    glfw.window_hint(glfw::WindowHint::Resizable(true));
+    
+    let (mut window, events) = glfw.create_window(850, 450, "Mori", glfw::WindowMode::Windowed)
+        .expect("Failed to create GLFW window.");
+
+    window.make_current();
+    window.set_key_polling(true);
+    
+    // Initialize OpenGL
+    gl::load_with(|s| window.get_proc_address(s) as *const _);
+
     let options = eframe::NativeOptions {
-        centered: true,
+        renderer: eframe::Renderer::OpenGL1,
         viewport: ViewportBuilder::default()
             .with_title("Mori")
-            .with_icon(
-                eframe::icon_data::from_png_bytes(&include_bytes!("../assets/logo.png")[..])
-                    .expect("Failed to load icon"),
-            )
             .with_inner_size([850.0, 450.0])
             .with_decorations(false)
             .with_transparent(true),
         ..Default::default()
     };
-    let _ = eframe::run_native("Mori", options, Box::new(|cc| Ok(Box::new(App::new(cc)))));
+    
+    let app = App::new(&eframe::CreationContext::new(
+        &options,
+        &glfw,
+        &window,
+        &events,
+    ));
+
+    while !window.should_close() {
+        window.swap_buffers();
+        glfw.poll_events();
+        
+        unsafe {
+            gl::ClearColor(0.0, 0.0, 0.0, 0.0);
+            gl::Clear(gl::COLOR_BUFFER_BIT);
+        }
+        
+        app.update();
+        
+        // Render GUI
+        eframe::render(&app, &mut window, &options);
+    }
 }
 
 struct App {
