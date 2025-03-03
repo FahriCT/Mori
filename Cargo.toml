@@ -34,4 +34,6 @@ flate2 = "1.0.34"
 rttex = { git = "https://github.com/CLOEI/rttex" }
 dirs = "5.0.1"
 image = "0.25.5"
+glfw = "0.45"
+gl = "0.14"
 
