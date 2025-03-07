@@ -557,7 +557,7 @@ impl Bot {
                     "User-Agent",
                     "UbiServices_SDK_2022.Release.9_PC64_ansi_static",
                 )
-                .send_string("version=5.07&platform=0&protocol=214");
+                .send_string("version=5.08&platform=0&protocol=214");
 
             let res = match req {
                 Ok(res) => res,
