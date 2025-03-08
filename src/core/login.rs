@@ -294,7 +294,7 @@ pub fn get_apple_token(url: &str) -> Result<String, io::Error> {
 
 pub fn get_google_token(url: &str, username: &str, password: &str) -> Result<String, ureq::Error> {
     loop {
-        let response = ureq::post("http://localhost:5123/token")
+        let response = ureq::post("http://localhost:5000/token")
             .timeout(Duration::from_secs(60))
             .send_form(&[("url", url), ("email", username), ("password", password)]);
 
@@ -328,24 +328,19 @@ pub fn get_legacy_token(url: &str, username: &str, password: &str) -> Result<Str
         None => panic!("Failed to extract token"),
     };
 
-    let req = agent
-        .post("https://login.growtopiagame.com/player/growid/login/validate")
-        .send_form(&[
-            ("_token", &token),
-            ("growId", &username),
-            ("password", &password),
-        ])?;
+    Ok(token)
+}
 
-    if req.status() == 200 {
-        let body = req.into_string()?;
-        let json: Value = serde_json::from_str(&body).unwrap();
-        Ok(json["token"].as_str().unwrap().to_string())
-    } else {
-        // 302 is possible invalid credentials redirection
-        Err(ureq::Error::Status(
-            403,
-            ureq::Response::new(403, "forbidden", "invalid_credentials")?,
-        ))
+impl Bot {
+    pub fn validate_login(&self, token: String, username: String, password: String) -> Result<ureq::Response, ureq::Error> {
+        let req = self.agent
+            .post("https://login.growtopiagame.com/player/growid/login/validate")
+            .send_form(&[
+                ("_token", &token),
+                ("growId", &username),
+                ("password", &password),
+            ])?;
+        Ok(req)
     }
 }
 
